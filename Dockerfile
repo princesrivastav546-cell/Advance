@@ -10,5 +10,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# IMPORTANT: web server must bind to Render's PORT
-CMD sh -c "gunicorn -w 1 -b 0.0.0.0:${PORT:-10000} web:app & python bot.py"
+# Render expects something listening on $PORT (Web Service)
+CMD sh -c "gunicorn --log-level info --access-logfile - --error-logfile - -w 1 -b 0.0.0.0:${PORT:-10000} web:app & python bot.py"
