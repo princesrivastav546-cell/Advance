@@ -3,68 +3,123 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Telegram Mini App</title>
-
-  <!-- Telegram WebApp SDK -->
+  <title>Python Host Mini App</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
   <link rel="stylesheet" href="/static/app.css" />
+
+  <!-- Monaco Editor loader (CDN) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
 </head>
 <body>
   <div class="wrap">
     <header class="top">
       <div>
-        <div class="title">Mini App Dashboard</div>
-        <div class="sub">Runs inside Telegram • sends data to your bot</div>
+        <div class="title">Python Project Manager</div>
+        <div class="sub">Import • Upload • Edit (VSCode editor) • Export • Publish to GitHub</div>
       </div>
-      <span class="badge" id="envBadge">Loading…</span>
+      <span class="badge" id="badge">Telegram</span>
     </header>
 
     <section class="card">
-      <h2>User</h2>
-      <div class="row">
-        <div class="k">Name</div>
-        <div class="v" id="name">—</div>
+      <div class="row2">
+        <input id="newProjectName" class="input" placeholder="New project name (e.g. my-bot)" />
+        <button class="btn" id="createProjectBtn">+ Create</button>
       </div>
-      <div class="row">
-        <div class="k">User ID</div>
-        <div class="v mono" id="uid">—</div>
+      <div class="row2">
+        <select id="projectSelect" class="input"></select>
+        <button class="btn ghost" id="refreshBtn">Refresh</button>
       </div>
-      <div class="row">
-        <div class="k">Theme</div>
-        <div class="v" id="theme">—</div>
-      </div>
+      <div class="hint" id="projHint">Select a project to manage files.</div>
     </section>
 
-    <section class="card">
-      <h2>Send a message to bot</h2>
-      <label class="label">Message</label>
-      <textarea id="msg" class="input" rows="3" placeholder="Type something…"></textarea>
+    <section class="tabs">
+      <button class="tab active" data-tab="upload">1) Import / Upload</button>
+      <button class="tab" data-tab="editor">2) Code Editor</button>
+      <button class="tab" data-tab="config">3) Requirements & Env</button>
+      <button class="tab" data-tab="export">Export & GitHub</button>
+    </section>
 
+    <!-- Upload + Import -->
+    <section class="card tabpane" id="tab-upload">
+      <h2>Import from GitHub Public Repo</h2>
+      <div class="row2">
+        <input id="importUrl" class="input" placeholder="https://github.com/owner/repo" />
+        <button class="btn" id="importBtn">Import</button>
+      </div>
+      <p class="hint">Repo zip download karke project me copy ho jayega.</p>
+
+      <div class="spacer"></div>
+
+      <h2>Upload files</h2>
+      <div class="row2">
+        <input id="uploadPath" class="input" placeholder="Path (optional) e.g. src/main.py" />
+        <input id="uploadFile" class="input" type="file" />
+      </div>
+      <button class="btn" id="uploadBtn">Upload</button>
+    </section>
+
+    <!-- Editor -->
+    <section class="card tabpane hidden" id="tab-editor">
+      <h2>VSCode Style Editor (Monaco)</h2>
+
+      <div class="row2">
+        <select id="fileSelect" class="input"></select>
+        <button class="btn ghost" id="loadFileBtn">Load</button>
+      </div>
+
+      <div class="row2">
+        <input id="filePath" class="input" placeholder="File path (e.g. bot.py or src/app.py)" />
+        <button class="btn" id="saveFileBtn">Save</button>
+      </div>
+
+      <div id="editor" class="editor"></div>
+
+      <div class="row2">
+        <button class="btn ghost" id="newFileBtn">New File</button>
+        <button class="btn ghost" id="reloadFilesBtn">Reload File List</button>
+      </div>
+
+      <p class="hint">Tip: Save karne ke baad Export/GitHub tab se ZIP ya Publish use karo.</p>
+    </section>
+
+    <!-- Config -->
+    <section class="card tabpane hidden" id="tab-config">
+      <h2>requirements.txt</h2>
+      <textarea id="reqTxt" class="input mono" rows="8" placeholder="flask\nrequests\n..."></textarea>
+      <button class="btn" id="saveReqBtn">Save requirements.txt</button>
+
+      <div class="spacer"></div>
+
+      <h2>Environment Variables (JSON)</h2>
+      <textarea id="envJson" class="input mono" rows="8" placeholder='{"TOKEN":"...","DEBUG":"0"}'></textarea>
+      <button class="btn" id="saveEnvBtn">Save ENV_VARS.json</button>
+      <p class="hint">Render me env vars manually set hote hain. Ye file export/publish me helpful hai.</p>
+    </section>
+
+    <!-- Export + Publish -->
+    <section class="card tabpane hidden" id="tab-export">
+      <h2>Export</h2>
       <div class="grid">
-        <button class="btn" id="sendBtn">Send to Bot</button>
-        <button class="btn ghost" id="mainBtnToggle">Toggle Main Button</button>
+        <a class="btn" id="zipLink" href="#" target="_blank" rel="noreferrer">Download ZIP</a>
+        <button class="btn ghost" id="sendToBotBtn">Send Info to Bot</button>
       </div>
 
-      <p class="hint">
-        ✅ “Send to Bot” uses <span class="mono">Telegram.WebApp.sendData()</span>.
-        The bot receives it as <span class="mono">web_app_data</span>.
-      </p>
-    </section>
+      <div class="spacer"></div>
 
-    <section class="card">
-      <h2>Quick actions</h2>
-      <div class="grid">
-        <button class="btn ghost" id="hapticBtn">Haptic</button>
-        <button class="btn ghost" id="expandBtn">Expand</button>
-        <button class="btn ghost" id="closeBtn">Close</button>
-        <button class="btn ghost" id="themeBtn">Refresh Theme</button>
+      <h2>Publish to GitHub</h2>
+      <div class="row2">
+        <input id="repoName" class="input" placeholder="Repo name (e.g. my-python-app)" />
+        <input id="repoDesc" class="input" placeholder="Description (optional)" />
       </div>
+      <div class="row2">
+        <label class="check"><input type="checkbox" id="repoPrivate" /> Private repo</label>
+        <button class="btn" id="publishBtn">🚀 Publish</button>
+      </div>
+
+      <pre class="mono small" id="exportInfo">—</pre>
     </section>
 
-    <footer class="foot">
-      <span class="mono">/start</span> in bot → Open Mini App
-    </footer>
+    <footer class="foot">Telegram Mini App • Render-ready</footer>
   </div>
 
   <script src="/static/app.js"></script>
